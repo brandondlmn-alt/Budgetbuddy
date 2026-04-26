@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Solid surface color first -->
+    <item>
+        <shape>
+            <solid android:color="@color/surface" />
+        </shape>
+    </item>
+    <!-- Centered logo with very low opacity -->
+    <item
+        android:gravity="center"
+        android:width="200dp"
+        android:height="200dp">
+        <bitmap
+            android:src="@drawable/app_logo"
+            android:alpha="0.08" />
+    </item>
+</layer-list>

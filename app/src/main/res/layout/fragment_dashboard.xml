@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/surface"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Overall Goal Header -->
+        <TextView
+            android:id="@+id/textMonthGoal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Month Goal: R 0.00 / R 0.00"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/primary"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- Larger circular progress with percentage inside -->
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="8dp">
+
+            <com.google.android.material.progressindicator.CircularProgressIndicator
+                android:id="@+id/circularProgress"
+                android:layout_width="160dp"
+                android:layout_height="160dp"
+                android:progress="0"
+                app:indicatorColor="@color/progress_green"
+                app:indicatorSize="140dp"
+                app:trackThickness="10dp" />
+
+            <TextView
+                android:id="@+id/textProgressPercent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="0%"
+                android:textSize="36sp"
+                android:textStyle="bold"
+                android:textColor="@color/on_surface" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/textTotalSpent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textSize="14sp"
+            android:textColor="@color/on_surface"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Pie Chart -->
+        <com.example.budgetbuddy.ui.main.views.PieChartView
+            android:id="@+id/pieChart"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Category Breakdown"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="@color/on_surface"
+            android:layout_marginBottom="8dp"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerCategoryProgress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="false"/>
+
+        <Button
+            android:id="@+id/btnAddExpense"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Add Expense"
+            android:layout_marginTop="12dp"/>
+    </LinearLayout>
+</ScrollView>
