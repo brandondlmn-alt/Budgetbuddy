@@ -60,15 +60,7 @@ BudgetBuddy is an Android budgeting app designed to make expense tracking, goal 
 🎥 Watch the full demonstration:  
 [BudgetBuddy Demo](https://youtu.be/your_video_link_here)
 
----
 
-## Screenshots
-
-| Login | Dashboard | Add Expense | Reports |
-|-------|-----------|-------------|---------|
-| ![Login](screenshots/login.png) | ![Dashboard](screenshots/dashboard.png) | ![Add](screenshots/add_expense.png) | ![Reports](screenshots/reports.png) |
-
-*(Add screenshots to a `screenshots/` folder in your repo if desired.)*
 
 ---
 
