@@ -3,6 +3,7 @@ package com.example.budgetbuddy
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.budgetbuddy.data.database.AppDatabase
 import com.example.budgetbuddy.data.entity.*
 import kotlinx.coroutines.runBlocking
@@ -11,11 +12,8 @@ import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 
-@RunWith(RobolectricTestRunner::class)
-@Config(sdk = [24])
+@RunWith(AndroidJUnit4::class)
 class DatabaseTest {
 
     private lateinit var db: AppDatabase
