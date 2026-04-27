@@ -1,17 +1,19 @@
 package com.example.budgetbuddy.ui.main.fragments
 
 import android.app.DatePickerDialog
-import android.content.pm.PackageManager
+import android.content.ContentValues
+import android.graphics.BitmapFactory
 import android.graphics.Paint
+import android.graphics.Rect
 import android.graphics.pdf.PdfDocument
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -19,6 +21,7 @@ import com.example.budgetbuddy.databinding.FragmentExpenseListBinding
 import com.example.budgetbuddy.ui.main.viewmodels.ExpenseListViewModel
 import java.io.File
 import java.io.FileOutputStream
+import java.io.OutputStream
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -36,16 +39,6 @@ class ExpenseListFragment : Fragment() {
     private val viewModel: ExpenseListViewModel by viewModels()
     private val userId by lazy { requireArguments().getInt("USER_ID") }
     private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-
-    // Permission request launcher
-    private val requestPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-            if (granted) {
-                exportToPdf()
-            } else {
-                Toast.makeText(requireContext(), "Storage permission required to export PDF", Toast.LENGTH_SHORT).show()
-            }
-        }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentExpenseListBinding.inflate(inflater, container, false)
@@ -90,13 +83,7 @@ class ExpenseListFragment : Fragment() {
         }
 
         binding.btnExportPDF.setOnClickListener {
-            // Check storage permission before exporting
-            if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                == PackageManager.PERMISSION_GRANTED) {
-                exportToPdf()
-            } else {
-                requestPermissionLauncher.launch(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            }
+            exportToPdf()
         }
 
         binding.btnFilter.performClick()
@@ -105,37 +92,125 @@ class ExpenseListFragment : Fragment() {
     private fun exportToPdf() {
         val adapter = binding.recyclerExpenses.adapter as? ExpenseAdapter ?: return
         val expenses = adapter.items
+        if (expenses.isEmpty()) {
+            Toast.makeText(requireContext(), "No expenses to export", Toast.LENGTH_SHORT).show()
+            return
+        }
 
         val pdf = PdfDocument()
-        val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create()
-        val page = pdf.startPage(pageInfo)
-        val canvas = page.canvas
-        val paint = Paint()
-        paint.textSize = 11f
+        val pageWidth = 595
+        val pageHeight = 842
+        var currentPage = pdf.startPage(PdfDocument.PageInfo.Builder(pageWidth, pageHeight, 1).create())
+        var canvas = currentPage.canvas
         var y = 40f
 
-        canvas.drawText("Date          Description          Amount", 10f, y, paint)
-        y += 20f
-        for (e in expenses) {
-            val line = String.format(Locale.ROOT, "%s  %s  R%.2f", e.date, e.description, e.amount)
-            canvas.drawText(line, 10f, y, paint)
-            y += 15f
-            if (y > 800f) {
-                pdf.finishPage(page)
-                break
-            }
+        val titlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            textSize = 14f
+            isFakeBoldText = true
         }
-        pdf.finishPage(page)
+        val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            textSize = 10f
+        }
+        val lineHeight = 16f
+        val marginLeft = 10f
+        val usableWidth = (pageWidth - marginLeft * 2).toFloat()
 
-        val file = File(
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-            "expenses_${System.currentTimeMillis()}.pdf"
-        )
-        FileOutputStream(file).use { output ->
-            pdf.writeTo(output)
+        // Header
+        canvas.drawText("Date       Category       Description       Amount", marginLeft, y, titlePaint)
+        y += 24f
+
+        for (e in expenses) {
+            if (y > pageHeight - 50f) {
+                pdf.finishPage(currentPage)
+                currentPage = pdf.startPage(PdfDocument.PageInfo.Builder(pageWidth, pageHeight, 2).create())
+                canvas = currentPage.canvas
+                y = 40f
+                canvas.drawText("Date       Category       Description       Amount", marginLeft, y, titlePaint)
+                y += 24f
+            }
+
+            val line = String.format(Locale.ROOT, "%s  %s  %s  R%.2f", e.date, e.description, e.description, e.amount)
+            canvas.drawText(line, marginLeft, y, textPaint)
+            y += lineHeight
+
+            // Receipt image
+            if (!e.photoPath.isNullOrEmpty()) {
+                val photoFile = File(e.photoPath)
+                if (photoFile.exists()) {
+                    try {
+                        val originalBitmap = BitmapFactory.decodeFile(e.photoPath)
+                        if (originalBitmap != null) {
+                            var scaledWidth = originalBitmap.width.toFloat()
+                            var scaledHeight = originalBitmap.height.toFloat()
+                            val maxImageWidth = usableWidth
+                            val maxImageHeight = 150f
+
+                            if (scaledWidth > maxImageWidth) {
+                                val ratio = maxImageWidth / scaledWidth
+                                scaledWidth = maxImageWidth
+                                scaledHeight *= ratio
+                            }
+                            if (scaledHeight > maxImageHeight) {
+                                val ratio = maxImageHeight / scaledHeight
+                                scaledHeight = maxImageHeight
+                                scaledWidth *= ratio
+                            }
+
+                            if (y + scaledHeight > pageHeight - 40f) {
+                                pdf.finishPage(currentPage)
+                                currentPage = pdf.startPage(PdfDocument.PageInfo.Builder(pageWidth, pageHeight, 2).create())
+                                canvas = currentPage.canvas
+                                y = 40f
+                            }
+
+                            canvas.drawBitmap(originalBitmap, null,
+                                Rect(marginLeft.toInt(), y.toInt(), (marginLeft + scaledWidth).toInt(), (y + scaledHeight).toInt()), null)
+                            y += scaledHeight + 8f
+                            originalBitmap.recycle()
+                        }
+                    } catch (ex: Exception) {
+                        ex.printStackTrace()
+                    }
+                }
+            }
+            y += 4f
         }
+
+        pdf.finishPage(currentPage)
+
+        // Save the PDF
+        val fileName = "expenses_${System.currentTimeMillis()}.pdf"
+
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                // API 29+ – use MediaStore.Downloads (no permission needed)
+                val contentValues = ContentValues().apply {
+                    put(MediaStore.Downloads.DISPLAY_NAME, fileName)
+                    put(MediaStore.Downloads.MIME_TYPE, "application/pdf")
+                    put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+                }
+                val uri = requireContext().contentResolver.insert(
+                    MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues
+                )
+                uri?.let {
+                    val outputStream: OutputStream? = requireContext().contentResolver.openOutputStream(it)
+                    outputStream?.use { pdf.writeTo(it) }
+                    Toast.makeText(requireContext(), "PDF saved to Downloads", Toast.LENGTH_LONG).show()
+                } ?: Toast.makeText(requireContext(), "Failed to create PDF", Toast.LENGTH_SHORT).show()
+            } else {
+                // Older devices – fallback to app-specific directory
+                val dir = requireContext().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+                    ?: requireContext().filesDir
+                val file = File(dir, fileName)
+                FileOutputStream(file).use { pdf.writeTo(it) }
+                Toast.makeText(requireContext(), "PDF saved to ${file.absolutePath}", Toast.LENGTH_LONG).show()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(requireContext(), "Error saving PDF: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+
         pdf.close()
-        Toast.makeText(requireContext(), "PDF saved to ${file.absolutePath}", Toast.LENGTH_LONG).show()
     }
 
     override fun onDestroyView() {

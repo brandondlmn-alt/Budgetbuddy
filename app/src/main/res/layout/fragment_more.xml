@@ -85,5 +85,18 @@
             app:strokeColor="@color/primary"
             app:cornerRadius="16dp"/>
 
+        <!-- Logout Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnLogout"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="Logout"
+            android:textSize="16sp"
+            android:gravity="center"
+            android:layout_marginTop="20dp"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            app:strokeColor="@color/error"
+            app:cornerRadius="16dp"
+            android:textColor="@color/error"/>
     </LinearLayout>
 </ScrollView>
