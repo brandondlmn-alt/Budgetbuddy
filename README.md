@@ -5,7 +5,6 @@ BudgetBuddy is an Android budgeting app designed to make expense tracking, goal 
 ## Table of Contents
 - [Features](#features)
 - [Demo Video](#demo-video)
-- [Screenshots](#screenshots)
 - [Own Additional Features](#own-additional-features)
 - [Technical Stack](#technical-stack)
 - [Build Instructions](#build-instructions)
@@ -93,4 +92,4 @@ BudgetBuddy is an Android budgeting app designed to make expense tracking, goal 
 
 1. **Clone the repository**  
    ```bash
-   git clone https://github.com/YourUsername/BudgetBuddy.git
+   git clone https://github.com/brandondlmn-alt/Budgetbuddy.git
