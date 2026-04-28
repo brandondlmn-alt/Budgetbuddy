@@ -2,17 +2,6 @@
 
 BudgetBuddy is an Android budgeting app designed to make expense tracking, goal setting, and financial management simple and engaging. Developed in Kotlin using AndroidX, Room Database, and Material Design, the app runs on devices with API 24 (Android 7.0) and above.
 
-## Table of Contents
-- [Features](#features)
-- [Demo Video](#demo-video)
-- [Own Additional Features](#own-additional-features)
-- [Technical Stack](#technical-stack)
-- [Build Instructions](#build-instructions)
-- [Testing & Continuous Integration](#testing--continuous-integration)
-- [Project Structure](#project-structure)
-- [Author](#author)
-
----
 
 ## Features
 
@@ -57,9 +46,7 @@ BudgetBuddy is an Android budgeting app designed to make expense tracking, goal 
 ## Demo Video
 
 🎥 Watch the full demonstration:  
-[BudgetBuddy Demo](https://youtu.be/your_video_link_here)
-
-
+[BudgetBuddy Demo](https://youtu.be/IXRxW_5bzOE?si=mSmeb5mgIsubTlRh)
 
 ---
 
